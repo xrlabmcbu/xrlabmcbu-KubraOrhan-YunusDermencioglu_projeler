@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Görsel İşleme</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .form-container {
+            width: 50%;
+        }
+        .image-preview {
+            width: 45%;
+            text-align: center;
+        }
+        .image-preview img {
+            max-width: 70%;
+            height: auto;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="form-container">
+            <h1 class="mb-4">Görsel İşleme</h1>
+            <form id="image-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="model">Model Seç:</label>
+                    <select name="model" id="model" class="form-control" required>
+                        <option value="nlpconnect/vit-gpt2-image-captioning">nlpconnect/vit-gpt2-image-captioning</option>
+                        <option value="Salesforce/blip-image-captioning-large">Salesforce/blip-image-captioning-large</option>
+                        <option value="microsoft/git-large-coco">microsoft/git-large-coco</option>
+                        <option value="microsoft/trocr-base-handwritten">microsoft/trocr-base-handwritten</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="image">Görsel Seç:</label>
+                    <input type="file" name="image" id="image" class="form-control-file" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Görseli İşle</button>
+            </form>
+            
+            <div id="result" class="alert mt-3"></div>
+        </div>
+        
+        <div class="image-preview">
+            <h3></h3>
+            <img id="image-preview" src="" alt="Resim Önizlemesi" style="display: none;">
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#image-form').on('submit', function(event) {
+                event.preventDefault();  // Formun normal şekilde gönderilmesini engelle
+                
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/process_image_with_model',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        if (response.error) {
+                            $('#result').removeClass('alert-success').addClass('alert-danger').html('Hata: ' + response.error);
+                        } else {
+                            $('#result').removeClass('alert-danger').addClass('alert-success').html('Sonuç: ' + response.result);
+                        }
+                    },
+                    error: function() {
+                        $('#result').removeClass('alert-success').addClass('alert-danger').html('Bir hata oluştu.');
+                    }
+                });
+            });
+
+            // Resim seçildiğinde önizlemeyi göster
+            $('#image').on('change', function() {
+                var file = this.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#image-preview').attr('src', e.target.result).show();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#image-preview').hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

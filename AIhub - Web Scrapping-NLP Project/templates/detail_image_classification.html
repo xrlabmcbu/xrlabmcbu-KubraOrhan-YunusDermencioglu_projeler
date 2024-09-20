@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Başlangıçta her şey ortada */
+        .centered-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40vh; /* Yüksekliği ekranın %80'ine ayarla */
+        }
+
+        .input-section, .image-section {
+            text-align: center;
+            margin: 10px;
+        }
+
+        /* Sonuçlar geldikten sonra düzeni değiştirmek için */
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .image-section{
+            max-width: 80%;
+        }
+        .image-section img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        #result ul {
+            padding-left: 0;
+        }
+
+        #result ul li {
+            list-style: none;
+            padding: 10px;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        /* Başlangıçta Uploaded Image ve Results gizlenir */
+        #result, .image-section {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4">Image Classification</h1>
+            <p class="lead">Choose a model and upload an image to classify.</p>
+        </div>
+
+        <!-- Başlangıçta içerik ortalanır -->
+        <div id="centeredView" class="centered-container">
+            <div class="input-section">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="model">Choose Model:</label>
+                                <select id="model" name="model" class="form-control" required>
+                                    <option value="Falconsai/nsfw_image_detection">Falconsai/nsfw_image_detection (85.8M params)</option>
+                                    <option value="microsoft/resnet-50">microsoft/resnet-50 (25.6M params)</option>
+                                    <option value="google/vit-base-patch16-224">google/vit-base-patch16-224 (86.6M params)</option>
+                                    <option value="nateraw/vit-age-classifier">nateraw/vit-age-classifier (85.8M params)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="file">Select Image:</label>
+                                <input type="file" id="file" name="file" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Classify Image</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sonuçlar -->
+                <div id="result" class="mt-4 card">
+                    <div class="card-body">
+                        <h5 class="card-title">Results:</h5>
+                        <ul id="resultList" class="list-group"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resim gösterimi -->
+            <div class="image-section">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Uploaded Image</h5>
+                        <img id="uploadedImage" src="#" alt="Uploaded Image" class="img-fluid mt-3">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+
+            // Fetch API ile POST isteği gönderme
+            fetch('/classifyImage', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                var resultList = document.getElementById('resultList');
+                resultList.innerHTML = '';
+
+                if (data.results) {
+                    // Results ve Uploaded Image bölümlerini göster
+                    document.getElementById('result').style.display = 'block';
+                    document.querySelector('.image-section').style.display = 'block';
+
+                    // Sonuçları listeye ekle
+                    data.results.forEach(function(item) {
+                        var listItem = document.createElement('li');
+                        listItem.textContent = item.label + ': %' + (item.score * 100).toFixed(2);
+                        listItem.classList.add('list-group-item');
+                        resultList.appendChild(listItem);
+                    });
+
+                    // Yüklenen resmi gösterme
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var uploadedImage = document.getElementById('uploadedImage');
+                        uploadedImage.src = e.target.result;
+                        uploadedImage.style.display = 'block';
+                    }
+                    reader.readAsDataURL(document.getElementById('file').files[0]);
+
+                    // Ortalanmış görünümü sola kaydırarak düzeni değiştir
+                    var centeredView = document.getElementById('centeredView');
+                    centeredView.classList.remove('centered-container');
+                    centeredView.classList.add('content-container');
+                } else {
+                    var listItem = document.createElement('li');
+                    listItem.textContent = 'An error occurred: ' + data.error;
+                    listItem.classList.add('list-group-item', 'list-group-item-danger');
+                    resultList.appendChild(listItem);
+                }
+            })
+            .catch(error => {
+                var resultList = document.getElementById('resultList');
+                resultList.innerHTML = '';
+                var listItem = document.createElement('li');
+                listItem.textContent = 'An error occurred: ' + error;
+                listItem.classList.add('list-group-item', 'list-group-item-danger');
+                resultList.appendChild(listItem);
+            });
+        });
+    </script>
+</body>
+</html>

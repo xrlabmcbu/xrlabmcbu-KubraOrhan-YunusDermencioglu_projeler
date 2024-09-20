@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Segmentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .form-container {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .result-container {
+            flex: 1;
+            max-width: 300px; /* Görüntünün genişliğini küçültmek için max-width değeri azaltıldı */
+        }
+
+        .img-fluid {
+            width: 100%;
+            height: auto;
+            max-width: 300px; /* Görüntünün genişliğini küçültmek için max-width değeri azaltıldı */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Image Segmentation</h1>
+        <div class="content-container">
+            <div class="form-container">
+                <form id="segmentForm" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="model" class="form-label">Model Seç:</label>
+                        <select class="form-select" name="model" id="model">
+                            <option value="nvidia/segformer-b0-finetuned-ade-512-512">nvidia/segformer-b0-finetuned-ade-512-512 (3.75M params)</option>
+                            <option value="mattmdjaga/segformer_b2_clothes">mattmdjaga/segformer_b2_clothes (27.4M params)</option>
+                            <option value="facebook/mask2former-swin-large-cityscapes-semantic">facebook/mask2former-swin-large-cityscapes-semantic (216M params)</option>
+                            <option value="openmmlab/upernet-swin-small">openmmlab/upernet-swin-small (81.3M params)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Görsel Yükle:</label>
+                        <input class="form-control" type="file" name="file" id="file" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Segment Görsel</button>
+                </form>
+            </div>
+
+            <div id="result" class="result-container">
+                <!-- Segmentasyon sonucu burada gösterilecek -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#segmentForm').on('submit', function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/segment',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.image_url) {
+                            $('#result').html('<h3>Segmented Image:</h3><img src="' + response.image_url + '" class="img-fluid" alt="Segmented Image">');
+                        } else if (response.error) {
+                            $('#result').html('<p class="text-danger">' + response.error + '</p>');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('#result').html('<p class="text-danger">An error occurred: ' + error + '</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

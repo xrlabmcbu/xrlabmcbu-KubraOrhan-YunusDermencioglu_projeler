@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 50px 0; /* Üst ve alt padding eklendi */
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2 {
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        h3 {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 1.25rem; /* Yazı puntosunu küçülttüm */
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.875rem; /* Yazı puntosunu küçülttüm */
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            box-shadow: none;
+            font-size: 0.875rem; /* Yazı puntosunu küçülttüm */
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .form-control option {
+            white-space: normal;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 8px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            font-size: 0.875rem; /* Yazı puntosunu küçülttüm */
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        #results {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        #resultsList {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #resultsList li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            color: #495057;
+            font-size: 0.875rem; /* Yazı puntosunu küçülttüm */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Select a Model</h1>
+        <form id="modelForm">
+            <div class="form-group">
+                <label for="modelSelect">Choose a model:</label>
+                <select id="modelSelect" class="form-control">
+                    <option value="facebook/fasttext-language-identification">facebook/fasttext-language-identification (no info)</option>
+                    <option value="cardiffnlp/twitter-roberta-base-sentiment-latest">cardiffnlp/twitter-roberta-base-sentiment-latest (no info)</option>
+                    <option value="SamLowe/roberta-base-go_emotions">SamLowe/roberta-base-go_emotions (125M params)</option>
+                    <option value="nlptown/bert-base-multilingual-uncased-sentiment">nlptown/bert-base-multilingual-uncased-sentiment (no info)</option>
+                </select>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="textPrompt">Enter Text for Classification</label>
+                <textarea id="textPrompt" class="form-control" rows="4" placeholder="Enter text here..."></textarea>
+            </div>
+            <button type="submit" id="classifyButton" class="btn btn-primary mt-3">Classify</button>
+        </form>
+
+        <div id="results" class="mt-5">
+            <h3>Classification Results</h3>
+            <ul id="resultsList" class="list-group">
+                <!-- Classification results will be added here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initial hide of results
+            document.getElementById("results").style.display = "none";
+
+            document.getElementById("classifyButton").addEventListener("click", function(e) {
+                e.preventDefault();
+                const selectedModel = document.getElementById("modelSelect").value;
+                const textPrompt = document.getElementById("textPrompt").value;
+                if (selectedModel && textPrompt) {
+                    fetch('/classifyText', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: selectedModel,
+                            text: textPrompt
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultsList = document.getElementById("resultsList");
+                        resultsList.innerHTML = ''; // Clear previous results
+
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach((result) => {
+                                const listItem = document.createElement("li");
+                                listItem.className = "list-group-item";
+                                listItem.textContent = ${result.label}: ${result.score};
+                                resultsList.appendChild(listItem);
+                            });
+
+                            // Show the results section with classification results
+                            document.getElementById("results").style.display = "block";
+                        } else {
+                            resultsList.innerHTML = '<li class="list-group-item">No results found.</li>';
+                            document.getElementById("results").style.display = "block";
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                } else {
+                    alert("Please select a model and enter text.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

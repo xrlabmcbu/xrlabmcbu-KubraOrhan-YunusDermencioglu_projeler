@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Display Image</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .form-container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        #uploadedImage {
+            width: 100%;
+            height: auto;
+            max-width: 500px;
+            display: none;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .btn-custom {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="content-container">
+            <div class="form-container">
+                <div class="text-center mb-5">
+                    <h1 class="display-4">Image to Image converter</h1>
+                    <p class="lead">Upload Image and Choose Model</p>
+                </div>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select Image:</label>
+                        <input type="file" id="file" name="file" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="text" class="form-label">(Optional) Text-guidance if the model has support for it:</label>
+                        <input type="text" id="text" name="text" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="model" class="form-label">Choose Model:</label>
+                        <select id="model" name="model" class="form-select" required>
+                            <option value="stabilityai/stable-diffusion-xl-refiner-1.0">stabilityai/stable-diffusion-xl-refiner-1.0</option>
+                            <option value="lllyasviel/sd-controlnet-canny">lllyasviel/sd-controlnet-canny</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-custom">Upload</button>
+                </form>
+            </div>
+
+            <div class="result-container">
+                <img id="uploadedImage" src="" alt="Processed Image">
+                <p id="message"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            fetch('/uploadImage', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.image_url) {
+                        document.getElementById('uploadedImage').src = data.image_url;
+                        document.getElementById('uploadedImage').style.display = 'block';
+                        document.getElementById('message').textContent = data.message;
+                    } else {
+                        document.getElementById('message').textContent = data.error || 'An error occurred';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('message').textContent = 'An error occurred: ' + error;
+                });
+        });
+    </script>
+</body>
+
+</html>

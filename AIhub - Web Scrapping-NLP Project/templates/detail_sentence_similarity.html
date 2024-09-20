@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 50px 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #343a40;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.875rem;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            box-shadow: none;
+            font-size: 0.875rem;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 8px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        #results {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            margin-bottom: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none; /* Sonuçlar başlangıçta gizli */
+        }
+        #scoresList {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #scoresList li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            color: #495057;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Select a Model</h1>
+        <div class="mt-4">
+            <label for="modelSelect">Choose a model:</label>
+            <select id="modelSelect" class="form-control">
+                <option value="" disabled selected>Select a model</option>
+                <option value="sentence-transformers/all-MiniLM-L6-v2">sentence-transformers/all-MiniLM-L6-v2 (22.7M params)</option>
+                <option value="BAAI/bge-m3">BAAI/bge-m3 (no info)</option>
+                <option value="thenlper/gte-large">thenlper/gte-large (335M params)</option>
+                <!-- Diğer modeller buraya eklenecek -->
+            </select>
+        </div>
+
+        <div class="mt-5">
+            <h2>Enter Sentences for Similarity Check</h2>
+            <div class="form-group">
+                <label for="originalSentence">Original Sentence:</label>
+                <textarea id="originalSentence" class="form-control" rows="2" placeholder="Enter the original sentence here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="sentences">Sentences to Compare:</label>
+                <textarea id="sentences" class="form-control" rows="4" placeholder="Enter sentences to compare, separated by new lines..."></textarea>
+            </div>
+            <button id="compareButton" class="btn btn-primary mt-3">Compare</button>
+        </div>
+
+        <div id="results" class="mt-5">
+            <h3>Similarity Scores</h3>
+            <ul id="scoresList" class="list-group">
+                <!-- Benzerlik skorları buraya eklenecek -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let selectedModel = null;
+
+            document.getElementById("modelSelect").addEventListener("change", function() {
+                selectedModel = this.value;
+            });
+
+            document.getElementById("compareButton").addEventListener("click", function() {
+                const originalSentence = document.getElementById("originalSentence").value;
+                const sentences = document.getElementById("sentences").value.split('\n');
+                if (selectedModel && originalSentence && sentences.length > 0) {
+                    fetch('/getSimilarityScore', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: selectedModel,
+                            original_sentence: originalSentence,
+                            sentences: sentences
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const scoresList = document.getElementById("scoresList");
+                        const resultsDiv = document.getElementById("results");
+                        scoresList.innerHTML = ''; // Clear previous results
+                        if (data.scores && data.scores.length > 0) {
+                            data.scores.forEach((score, index) => {
+                                const listItem = document.createElement("li");
+                                listItem.className = "list-group-item";
+                                listItem.textContent = `Sentence ${index + 1}: ${score.toFixed(2)}% similarity`;
+                                scoresList.appendChild(listItem);
+                            });
+                            resultsDiv.style.display = 'block'; // Show the results section
+                        } else {
+                            scoresList.innerHTML = '<li class="list-group-item">No results found.</li>';
+                            resultsDiv.style.display = 'block'; // Show the results section
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                } else {
+                    alert("Please select a model and enter both original sentence and sentences to compare.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

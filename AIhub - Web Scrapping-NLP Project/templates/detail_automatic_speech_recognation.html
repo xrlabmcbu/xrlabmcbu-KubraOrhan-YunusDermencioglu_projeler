@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASR Uygulaması</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Otomatik Konuşma Tanıma</h1>
+        <form id="asr-form">
+            <div class="form-group">
+                <label for="model">Model Seçin:</label>
+                <select name="model" id="model" class="form-control">
+                    <option value="openai/whisper-large-v3">openai/whisper-large-v3 (1.54B params)</option>
+                    <option value="jonatasgrosman/wav2vec2-large-xlsr-53-english">jonatasgrosman/wav2vec2-large-xlsr-53-english (315M params)</option>
+                    <option value="facebook/wav2vec2-base-960h">facebook/wav2vec2-base-960h (94.4M params)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="audio_file">Ses Dosyası Seçin:</label>
+                <input type="file" name="audio_file" id="audio_file" class="form-control-file">
+            </div>
+            <button type="submit" class="btn btn-primary">Gönder</button>
+        </form>
+        <div id="result" class="mt-4"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#asr-form').on('submit', function(event) {
+                event.preventDefault(); // Formun sayfayı yeniden yüklemesini engeller
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/asr',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        if (data.text) {
+                            $('#result').html('<div class="alert alert-info"><p>' + data.text + '</p></div>');
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#result').html('<div class="alert alert-danger"><p>' + xhr.responseJSON.error + '</p></div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

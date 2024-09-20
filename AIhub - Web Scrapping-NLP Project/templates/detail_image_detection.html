@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Object Detection</title>
+      <link
+         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+         rel="stylesheet"
+         />
+      <style>
+         /* Sayfa ve genel stil */
+         body {
+         background-color: #f8f9fa;
+         }
+         .container {
+         max-width: 50%; /* Genişliği daralt */
+         margin-top: 50px;
+         transition: all 0.5s ease;
+         }
+         .card {
+         border-radius: 10px;
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+         }
+         .form-section {
+         flex: 1;
+         }
+         .image-preview {
+         width: 100%;
+         height: auto;
+         display: none;
+         }
+         #uploadedImageTitle {
+         display: none;
+         font-weight: bold;
+         margin-top: 20px;
+         }
+         .list-group-item {
+         font-size: 0.9rem;
+         }
+         /* Flex düzeni */
+         .content-container {
+         display: flex;
+         justify-content: space-between; /* Sol ve sağ arasında boşluk bırak */
+         align-items: flex-start; /* Üstten hizala */
+         }
+         .left-section {
+         flex: 1;
+         margin-right: 20px; /* Sağdan boşluk bırak */
+         }
+         .right-section {
+         flex: 1;
+         text-align: center;
+         display: none; /* Başlangıçta gizli */
+         }
+         /* Sonuçlar başta gizli */
+         #result {
+         display: none;
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <div class="text-center mb-5">
+            <h1 class="display-4">Object Detection</h1>
+            <p class="lead">Choose a model and upload an image for object detection.</p>
+         </div>
+         <div class="content-container" id="contentContainer">
+            <!-- Sol tarafta form inputları -->
+            <div class="left-section">
+               <div class="card p-4">
+                  <div class="card-body">
+                     <form
+                        id="objectDetectionForm"
+                        action="/detectObjects"
+                        method="post"
+                        enctype="multipart/form-data"
+                        >
+                        <div class="mb-3">
+                           <label for="model" class="form-label">Select a Model:</label>
+                           <select class="form-select" id="model" name="model" required>
+                              <option value="facebook/detr-resnet-50">
+                                 facebook/detr-resnet-50 (41.6M params)
+                              </option>
+                              <option value="hustvl/yolos-tiny">
+                                 hustvl/yolos-tiny (6.49M params)
+                              </option>
+                              <option value="facebook/detr-resnet-101">
+                                 facebook/detr-resnet-101 (60.7M params)
+                              </option>
+                              <option
+                                 value="microsoft/table-transformer-structure-recognition"
+                                 >
+                                 microsoft/table-transformer-structure-recognition (28.8M
+                                 params)
+                              </option>
+                           </select>
+                        </div>
+                        <div class="mb-3">
+                           <label for="file" class="form-label">Upload an Image:</label>
+                           <input
+                              class="form-control"
+                              type="file"
+                              id="file"
+                              name="file"
+                              accept="image/*"
+                              required
+                              />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                        Detect Objects
+                        </button>
+                     </form>
+                  </div>
+
+               </div>
+               <!-- Sonuçlar -->
+               <div id="result" class="mt-5 ">
+                     <h4>Results:</h4>
+                     <ul id="resultsList" class="list-group"></ul>
+               </div>
+            </div>
+            <!-- Sağ tarafta yüklenen resim gösterimi -->
+            <div class="right-section" id="imageSection">
+                <div class="card">
+                  <div class="card-body">
+                     <h5 class="card-title">Uploaded Image:</h5>
+                        <img
+                            id="uploadedImage"
+                            class="image-preview"
+                            src="#"
+                            alt="Uploaded Image"
+                            />   
+            </div>
+         </div>
+      </div>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script>
+         $(document).ready(function () {
+           $("#objectDetectionForm").on("submit", function (event) {
+             event.preventDefault();
+         
+             var formData = new FormData(this);
+         
+             $.ajax({
+               url: $(this).attr("action"),
+               type: $(this).attr("method"),
+               data: formData,
+               processData: false,
+               contentType: false,
+               success: function (response) {
+                 // Sonuçlar görünür hale getiriliyor
+                 $("#result").show();
+                 $("#resultsList").empty();
+                 response.results.forEach(function (item) {
+                   var label = item.label;
+                   var score = (item.score * 100).toFixed(2);
+                   var box = item.box;
+                   var location = box
+                     ? `Location: x=${box.xmin}, y=${box.ymin}, width=${box.width}, height=${box.height}`
+                     : "Location data unavailable";
+                   $("#resultsList").append(
+                     `<li class="list-group-item">${label}: ${score}% - ${location}</li>`
+                   );
+                 });
+         
+                 // Görseli sonuçlarla birlikte göster
+                 var reader = new FileReader();
+                 reader.onload = function (e) {
+                   $("#uploadedImage").attr("src", e.target.result);
+                   $("#uploadedImage").show();
+                   $("#uploadedImageTitle").show();
+                   // Form ve image bölümlerinin düzenini değiştirme
+                   $("#contentContainer").css("justify-content", "space-between");
+                   $("#imageSection").show();
+                 };
+                 reader.readAsDataURL($("#file")[0].files[0]);
+               },
+               error: function (xhr) {
+                 alert(`An error occurred: ${xhr.responseJSON.error}`);
+               },
+             });
+           });
+         });
+      </script>
+   </body>
+</html>

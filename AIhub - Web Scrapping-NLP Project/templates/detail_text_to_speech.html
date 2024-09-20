@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech Converter</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Text to Speech Converter</h1>
+        <form id="text-to-speech-form">
+            <div class="form-group">
+                <label for="text">Enter text:</label>
+                <textarea class="form-control" id="text" name="text" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lang">Select Language:</label>
+                <select class="form-control" id="lang" name="lang">
+                    <option value="en">English</option>
+                    <option value="tr">Türkçe</option>
+                    <option value="de">Almanca</option>
+                    <option value="fr">Fransızca</option>
+                    <option value="fr">Fransızca</option>
+                    <option value="es">İspanyolca</option>
+                    <option value="it">İtalyanca</option>
+                    <option value="pt">Portekizce</option>
+                    <option value="ru">Rusça</option>
+                    <option value="zh">Çince</option>
+                    <option value="ja">Japonca</option>
+                    <option value="ko">Korece</option>
+                    <option value="ar">Arapça</option>
+                    <!-- Diğer diller buraya eklenebilir -->
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Convert to Speech</button>
+        </form>
+
+        <div class="mt-4" id="audio-player" style="display:none;">
+            <h5>Generated Speech:</h5>
+            <audio controls id="audio"></audio>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('text-to-speech-form').onsubmit = async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const response = await fetch('/convert', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const audioUrl = URL.createObjectURL(await response.blob());
+                const audioPlayer = document.getElementById('audio');
+                audioPlayer.src = audioUrl;
+                document.getElementById('audio-player').style.display = 'block';
+            } else {
+                alert('Error: ' + await response.text());
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model List</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            margin-top: 50px;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2 {
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+        .card-header {
+            background-color: #1a73e8;
+            color: white;
+            border-bottom: none;
+            border-radius: 1rem 1rem 0 0;
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 20px;
+        }
+        .form-control, #generateButton {
+            border-radius: .5rem;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        #generateButton {
+            background-color: #007bff;
+            border-color: #007bff;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 8px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        #generateButton:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+        .result-box {
+            background-color: #e9ecef;
+            border-radius: .5rem;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .result-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                Select a Model
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="modelSelect">Choose a model:</label>
+                    <select id="modelSelect" class="form-control">
+                        <option value="openai-community/gpt2">openai-community/gpt2 (137M params)</option>
+                        <option value="distilbert/distilgpt2">distilbert/distilgpt2 (88.2M params)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <h2>Enter Text for Generation</h2>
+                    <textarea id="textPrompt" class="form-control" rows="4" placeholder="Enter text here..."></textarea>
+                    <button id="generateButton" class="btn btn-success mt-3">Generate</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="results" class="result-box mt-4">
+            <h3>Generated Text</h3>
+            <div id="resultsText" class="result-text">
+                <!-- Generated text will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("generateButton").addEventListener("click", function() {
+                const modelSelect = document.getElementById("modelSelect");
+                const selectedModel = modelSelect.value;
+                const textPrompt = document.getElementById("textPrompt").value;
+
+                if (selectedModel && textPrompt) {
+                    fetch('/generateText', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: selectedModel,
+                            text: textPrompt
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultsDiv = document.getElementById("results");
+                        const resultsText = document.getElementById("resultsText");
+                        if (data.generated_text) {
+                            resultsText.textContent = data.generated_text;
+                            resultsDiv.style.display = 'block';
+                        } else {
+                            resultsText.textContent = 'No result returned.';
+                            resultsDiv.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById("resultsText").textContent = 'An error occurred.';
+                        document.getElementById("results").style.display = 'block';
+                    });
+                } else {
+                    alert("Please select a model and enter text.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

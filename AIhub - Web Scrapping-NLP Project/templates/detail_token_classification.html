@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 50px 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #343a40;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.875rem;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            box-shadow: none;
+            font-size: 0.875rem;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 8px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        #results {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            margin-bottom: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none; /* Sonuçlar başlangıçta gizli */
+        }
+        #resultsList {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #resultsList li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            color: #495057;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Select a Model</h1>
+        <div class="mt-4">
+            <label for="modelSelect">Choose a model:</label>
+            <select id="modelSelect" class="form-control">
+                <option value="" selected disabled>Select a model</option>
+                <option value="dslim/bert-base-NER">dslim/bert-base-NER (108M params)</option>
+                <option value="FacebookAI/xlm-roberta-large-finetuned-conll03-english">FacebookAI/xlm-roberta-large-finetuned-conll03-english (560M params)</option>
+            </select>
+        </div>
+        
+        <div class="mt-5">
+            <h2>Enter Text for Classification</h2>
+            <textarea id="textPrompt" class="form-control" rows="4" placeholder="Enter text here..."></textarea>
+            <button id="classifyButton" class="btn btn-primary mt-3">Classify</button>
+        </div>
+        
+        <div id="results" class="mt-5">
+            <h3>Classification Results</h3>
+            <ul id="resultsList" class="list-group">
+                <!-- Sonuçlar buraya eklenecek -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let selectedModel = null;
+            document.getElementById("modelSelect").addEventListener("change", function() {
+                selectedModel = this.value;
+            });
+
+            document.getElementById("classifyButton").addEventListener("click", function() {
+                const textPrompt = document.getElementById("textPrompt").value;
+                if (selectedModel && textPrompt) {
+                    fetch('/tokenClassification', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: selectedModel,
+                            text: textPrompt
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const resultsList = document.getElementById("resultsList");
+                        resultsList.innerHTML = ""; // Önceki sonuçları temizle
+                        data.Results.forEach(result => {
+                            const listItem = document.createElement("li");
+                            listItem.className = "list-group-item";
+                            listItem.textContent = `${result.word}: ${result.entity_type} (${result.score.toFixed(2)}%)`;
+                            resultsList.appendChild(listItem);
+                        });
+                        document.getElementById("results").style.display = 'block'; // Sonuçları göster
+                    })
+                    .catch(error => console.error('Error:', error));
+                } else {
+                    alert("Please select a model and enter text.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

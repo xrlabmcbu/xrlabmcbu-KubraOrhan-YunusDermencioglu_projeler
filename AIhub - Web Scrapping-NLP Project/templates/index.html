@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIHub</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            font-family: 'Lato', sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+        .aihub-title {
+            font-weight: 900;
+            font-size: 4rem;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+        }
+        .category-title {
+            cursor: pointer;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #007bff;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .category-title:hover {
+            background-color: #e2e8f0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .list-group-item {
+            background-color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .list-group-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background-color: #edf2f7;
+        }
+        a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            color: #1a202c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="aihub-title">AIHub</h1>
+        <div class="row justify-content-center">
+            <!-- Computer Vision -->
+            <div class="col-md-4">
+                <h3 class="category-title" data-toggle="collapse" data-target="#cv-models">Computer Vision</h3>
+                <ul class="list-group collapse" id="cv-models">
+                    <li class="list-group-item">
+                        <a href="../detail_image_classification">Image Classification</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_image_detection">Image Detection</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_image_to_image">Image to Image</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_image_to_text">Image to Text</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_image_segmentation">Image Segmentation</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_text_to_image">Text to Image</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_video_classificaton">Video Classification</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- NLP -->
+            <div class="col-md-4">
+                <h3 class="category-title" data-toggle="collapse" data-target="#nlp-models">NLP</h3>
+                <ul class="list-group collapse" id="nlp-models">
+                    <li class="list-group-item">
+                        <a href="../detail_summarization">Text Summarization</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_classification">Text Classification</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_sentence_similarity">Sentence Similarity</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_token_classification">Token Classification</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_text_generator">Text Generation</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Audio -->
+            <div class="col-md-4">
+                <h3 class="category-title" data-toggle="collapse" data-target="#audio-models">Audio</h3>
+                <ul class="list-group collapse" id="audio-models">
+                    <li class="list-group-item">
+                        <a href="../detail_text_to_speech">Text to Speech</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_text_to_audio">Text to Audio</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_audio_classification">Audio Classification</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="../detail_automatic_speech_recognation">Automatic Speech Recognition</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
