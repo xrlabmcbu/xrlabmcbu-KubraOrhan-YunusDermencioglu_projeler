@@ -23,7 +23,7 @@ import text_to_audio
 import text_to_image
 from text_to_speech import convert_text_to_speech
 from token_classification import classify_token
-###from video_classifier import process_frame  
+from video_classifier import process_frame  
 
 
 app = Flask(__name__)
