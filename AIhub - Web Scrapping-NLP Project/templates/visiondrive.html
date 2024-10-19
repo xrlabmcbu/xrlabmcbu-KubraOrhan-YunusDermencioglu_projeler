@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionDrive - Dosya Yükle</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #343a40;
+            color: #e9ecef;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin: 0;
+            color: #e9ecef;
+        }
+
+        .container {
+            background: #495057;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .btn-custom {
+            border: none;
+            padding: 1.5rem 3rem;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            margin: 1.5rem;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-custom.file-upload {
+            background-color: #004085;
+        }
+
+        .btn-custom.file-upload:hover {
+            background-color: #001f3f;
+            transform: scale(1.05);
+        }
+
+        .btn-custom.analyze {
+            background-color: #dc3545;
+        }
+
+        .btn-custom.analyze:hover {
+            background-color: #a71d2a;
+            transform: scale(1.05);
+        }
+
+        .btn-custom.retry {
+            background-color: #28a745;
+            display: none;
+        }
+
+        .btn-custom.retry:hover {
+            background-color: #1e7e34;
+            transform: scale(1.05);
+        }
+
+        #result {
+            margin-top: 1rem;
+            color: #e9ecef;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            max-width: 100%;
+            max-height: 60vh;
+            overflow: auto;
+            background-color: #495057;
+            display: none;
+        }
+
+        #result img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>VisionDrive</h1>
+    </div>
+    <div class="container">
+        <form id="uploadForm" action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" id="file" name="file" required style="display: none;">
+            <button type="button" class="btn-custom file-upload" onclick="document.getElementById('file').click()">Dosya
+                Yükle</button>
+            <button type="submit" class="btn-custom analyze">Analiz Et</button>
+            <button type="button" class="btn-custom retry" onclick="window.location.reload();">Tekrar Dene</button>
+        </form>
+        <div id="result" class="mt-4">
+            <h2>Tahmin Sonuçları</h2>
+            <!-- Tahmin sonuçları burada gösterilecek -->
+        </div>
+    </div>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            let formData = new FormData(this);
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.text()).then(data => {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('result').innerHTML = data;
+                document.querySelector('.file-upload').style.display = 'none';
+                document.querySelector('.analyze').style.display = 'none';
+                document.querySelector('.retry').style.display = 'inline-block';
+            }).catch(error => {
+                document.getElementById('result').innerHTML = '<div class="alert alert-danger">Dosya yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.</div>';
+            });
+        });
+    </script>
+</body>
+
+</html>
