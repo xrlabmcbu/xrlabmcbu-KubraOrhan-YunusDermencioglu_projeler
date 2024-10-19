@@ -281,7 +281,7 @@ def generate():
     image_path = text_to_image.generate_image(model, text_prompt)
     return jsonify({'image_path': image_path})
 
-"""##video classification##    
+##video classification##    
 @app.route('/classify_video', methods=['POST'])
 def classify_video():
     file = request.files['video']
@@ -304,7 +304,7 @@ def classify_video():
     video.release()
 
     return jsonify(results)
-"""
+
 ### text to speech ###
 @app.route('/convert', methods=['POST'])
 def convert():
